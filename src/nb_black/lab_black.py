@@ -1,10 +1,6 @@
-# -*- coding: utf-8 -*-
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 import json
 import logging
 import re
-import sys
 
 from IPython.core.inputtransformer2 import (
     ESCAPE_DOUBLES,
@@ -19,21 +15,13 @@ from IPython.core.inputtransformer2 import (
     tr,
 )
 from IPython.display import Javascript, display
+from black import FileMode, format_str
 
 __BF_SIGNATURE__ = "__BF_HIDDEN_VARIABLE_{}__"
 
-if sys.version_info >= (3, 6, 0):
-    from black import format_str, FileMode
 
-    def _format_code(code):
-        return format_str(src_contents=code, mode=FileMode())
-
-
-else:
-    from yapf.yapflib.yapf_api import FormatCode
-
-    def _format_code(code):
-        return FormatCode(code, style_config="facebook")[0]
+def _format_code(code):
+    return format_str(src_contents=code, mode=FileMode())
 
 
 def _transform_magic_commands(cell, hidden_variables):
@@ -52,8 +40,7 @@ def _transform_magic_commands(cell, hidden_variables):
     class __MagicAssign(MagicAssign):
         def transform(self, lines):
             # https://github.com/ipython/ipython/blob/1879ed27bb0ec3be5fee499ac177ad14a9ef7cfd/IPython/core/inputtransformer2.py#L223
-            """Transform a magic assignment found by the ``find()`` classmethod.
-            """
+            """Transform a magic assignment found by the ``find()`` classmethod."""
             start_line, start_col = self.start_line, self.start_col
             lhs = lines[start_line][:start_col]
             end_line = find_end_of_continued_line(lines, start_line)
@@ -72,8 +59,7 @@ def _transform_magic_commands(cell, hidden_variables):
     class __SystemAssign(SystemAssign):
         def transform(self, lines):
             # https://github.com/ipython/ipython/blob/1879ed27bb0ec3be5fee499ac177ad14a9ef7cfd/IPython/core/inputtransformer2.py#L262
-            """Transform a system assignment found by the ``find()`` classmethod.
-            """
+            """Transform a system assignment found by the ``find()`` classmethod."""
             start_line, start_col = self.start_line, self.start_col
 
             lhs = lines[start_line][:start_col]
@@ -93,8 +79,7 @@ def _transform_magic_commands(cell, hidden_variables):
     class __EscapedCommand(EscapedCommand):
         def transform(self, lines):
             # https://github.com/ipython/ipython/blob/1879ed27bb0ec3be5fee499ac177ad14a9ef7cfd/IPython/core/inputtransformer2.py#L382
-            """Transform an escaped line found by the ``find()`` classmethod.
-            """
+            """Transform an escaped line found by the ``find()`` classmethod."""
             start_line, start_col = self.start_line, self.start_col
 
             indent = lines[start_line][:start_col]
@@ -121,8 +106,7 @@ def _transform_magic_commands(cell, hidden_variables):
     class __HelpEnd(HelpEnd):
         def transform(self, lines):
             # https://github.com/ipython/ipython/blob/1879ed27bb0ec3be5fee499ac177ad14a9ef7cfd/IPython/core/inputtransformer2.py#L439
-            """Transform a help command found by the ``find()`` classmethod.
-            """
+            """Transform a help command found by the ``find()`` classmethod."""
             piece = "".join(lines[self.start_line : self.q_line + 1])
             indent, content = piece[: self.start_col], piece[self.start_col :]
             lines_before = lines[: self.start_line]
@@ -137,11 +121,7 @@ def _transform_magic_commands(cell, hidden_variables):
 
             # If we're mid-command, put it back on the next prompt for the user.
             next_input = None
-            if (
-                (not lines_before)
-                and (not lines_after)
-                and content.strip() != m.group(0)
-            ):
+            if (not lines_before) and (not lines_after) and content.strip() != m.group(0):
                 next_input = content.rstrip("?\n")
 
             hidden_variables.append(content)
@@ -163,9 +143,7 @@ def _transform_magic_commands(cell, hidden_variables):
 
 def _recover_magic_commands(cell, hidden_variables):
     for hidden_variable_idx, hidden_variable in enumerate(hidden_variables):
-        cell = cell.replace(
-            __BF_SIGNATURE__.format(hidden_variable_idx), hidden_variable
-        )
+        cell = cell.replace(__BF_SIGNATURE__.format(hidden_variable_idx), hidden_variable)
     return cell
 
 
@@ -218,9 +196,7 @@ class BlackFormatter(object):
                 formatted_code = _format_code(cell)
 
                 # Recover magic commands
-                formatted_code = _recover_magic_commands(
-                    formatted_code, hidden_variables
-                )
+                formatted_code = _recover_magic_commands(formatted_code, hidden_variables)
 
                 self.__set_cell(unformatted_cell, formatted_code.strip(), cell_id)
         except (ValueError, TypeError, AssertionError) as err:

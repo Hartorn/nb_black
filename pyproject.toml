@@ -1,0 +1,47 @@
+[tool.poetry]
+name = "nb-black"
+version = "1.0.7"
+license = "MIT"
+
+description = "A simple extension for Jupyter Notebook and Jupyter Lab to beautify Python code automatically using Black."
+authors = ["Khoa Duong <dnanhkhoa@live.com>", "Bazire HOUSSIN <bazire@anotherbrain.ai>"]
+readme = "README.md"
+packages = [{include = "nb_black", from = "src"}]
+
+keywords=["black-formatter","black-beautifier","black","jupyterlab-extension","jupyter-notebook-extension"]
+classifiers = [
+        "Development Status :: 5 - Production/Stable",
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: MIT License",
+        "Programming Language :: Python",
+        "Programming Language :: Python :: 3 :: Only",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+        "Topic :: Software Development :: Libraries :: Python Modules",
+]
+[tool.poetry.dependencies]
+python = "^3.8"
+ipython = "*"
+black = ">=19.3"
+
+
+[tool.poetry.group.dev.dependencies]
+pylint = "^2.17.4"
+isort = "^5.12.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+### Tools
+
+[tool.black]
+line-length = 100
+
+[tool.isort]
+# extend_skip = [".history"]
+line_length = 100
+profile = "black"
+skip_gitignore = true
